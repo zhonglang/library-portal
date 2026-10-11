@@ -1,0 +1,14 @@
+# 在本目录执行：docker compose up -d --build
+# 数据库连接写在 .env 的 DATABASE_URL。写成 localhost 时，容器会改连宿主机上的数据库。
+services:
+  library:
+    build: .
+    ports:
+      - "8020:8020"
+    env_file:
+      - .env
+    environment:
+      DATABASE_HOST_ALIAS: host.docker.internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped

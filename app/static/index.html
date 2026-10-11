@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI漫剧网盘资源库</title>
+    <link rel="stylesheet" href="/static/app.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="heading">
+        <h1>AI漫剧网盘资源库</h1>
+        <p>输入剧名即可搜索，点网盘名复制链接。</p>
+      </header>
+      <p id="error" class="error" hidden></p>
+      <label class="search">
+        <span aria-hidden="true">⌕</span>
+        <input id="query" type="search" placeholder="搜索剧名，如：朝朝入梦" aria-label="搜索剧名" />
+      </label>
+      <div class="filters" role="group" aria-label="筛选">
+        <button type="button" data-filter="all" class="is-on">全部</button>
+        <button type="button" data-filter="complete">三网盘齐全</button>
+        <button type="button" data-filter="quark">有夸克</button>
+        <button type="button" data-filter="baidu">有百度</button>
+        <button type="button" data-filter="xunlei">有迅雷</button>
+      </div>
+      <p id="count" class="count">正在读取</p>
+      <div id="list" class="list"></div>
+    </main>
+    <div id="toast" class="toast" role="status" hidden></div>
+    <script src="/static/app.js"></script>
+  </body>
+</html>
