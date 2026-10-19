@@ -142,14 +142,50 @@ button, input { font: inherit; }
   font-weight: 700;
 }
 
-.card h2 {
+.card-meta {
   min-width: 0;
   flex: 1;
+}
+
+.card h2 {
   margin: 0.125rem 0 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 1rem;
+}
+
+.progress {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0.4rem 0 0;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  height: 1.4rem;
+  padding: 0 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.pill-done {
+  background: #079455;
+  color: #fff;
+}
+
+.pill-airing {
+  background: #dc6803;
+  color: #fff;
+}
+
+.pill-episode {
+  background: #f2f4f7;
+  color: #344054;
 }
 
 .copy-all {

@@ -38,7 +38,7 @@ def database_dsn(url: str, alias: str = "") -> str:
 
 def load_items(settings: Settings) -> list[dict]:
     sql = """
-        SELECT id, prefix, name, xunlei_url, quark_url, baidu_url
+        SELECT id, prefix, name, finished, latest_episode, xunlei_url, quark_url, baidu_url
         FROM library_items
     """
     params: dict[str, int] = {}

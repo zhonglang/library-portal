@@ -32,6 +32,20 @@ function linkCount(item) {
   return pans.filter((pan) => filled(item, pan.key)).length;
 }
 
+function progressPills(item) {
+  const finished = Boolean(item.finished);
+  const latest = item.latest_episode;
+  const pills = [];
+  if (finished) {
+    pills.push({ text: "完结", tone: "done" });
+    if (latest != null) pills.push({ text: `${latest} 集`, tone: "episode" });
+  } else if (latest != null) {
+    pills.push({ text: "更新中", tone: "airing" });
+    pills.push({ text: `至 ${latest} 集`, tone: "episode" });
+  }
+  return pills;
+}
+
 function matches(item) {
   if (filter === "complete" && linkCount(item) !== pans.length) return false;
   if (filter === "quark" && !filled(item, "quark_url")) return false;
@@ -80,8 +94,23 @@ function render() {
     const badge = document.createElement("span");
     badge.className = "prefix";
     badge.textContent = item.prefix;
+    const meta = document.createElement("div");
+    meta.className = "card-meta";
     const title = document.createElement("h2");
     title.textContent = item.name.trim() || "未填写名称";
+    meta.append(title);
+    const pills = progressPills(item);
+    if (pills.length) {
+      const row = document.createElement("div");
+      row.className = "progress";
+      for (const pill of pills) {
+        const badge = document.createElement("span");
+        badge.className = `pill pill-${pill.tone}`;
+        badge.textContent = pill.text;
+        row.append(badge);
+      }
+      meta.append(row);
+    }
     const copyAll = document.createElement("button");
     copyAll.type = "button";
     copyAll.className = "copy-all";
@@ -91,7 +120,7 @@ function render() {
       .map(([label, key]) => `${label}：${item[key].trim()}`);
     copyAll.disabled = lines.length === 0;
     copyAll.addEventListener("click", () => void copyText(lines.join("\n")));
-    head.append(badge, title, copyAll);
+    head.append(badge, meta, copyAll);
 
     const row = document.createElement("div");
     row.className = "pans";
