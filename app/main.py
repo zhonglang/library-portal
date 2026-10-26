@@ -38,7 +38,8 @@ def database_dsn(url: str, alias: str = "") -> str:
 
 def load_items(settings: Settings) -> list[dict]:
     sql = """
-        SELECT id, prefix, name, finished, latest_episode, xunlei_url, quark_url, baidu_url
+        SELECT id, prefix, name, finished, latest_episode, previous_episode,
+               xunlei_url, quark_url, baidu_url, updated_at
         FROM library_items
     """
     params: dict[str, int] = {}
@@ -51,6 +52,13 @@ def load_items(settings: Settings) -> list[dict]:
             cur.execute(sql, params)
             columns = [column.name for column in cur.description]
             rows = [dict(zip(columns, row, strict=True)) for row in cur.fetchall()]
+    for row in rows:
+        stamp = row.get("updated_at")
+        if hasattr(stamp, "isoformat"):
+            row["updated_at"] = stamp.isoformat()
+        for key in ("xunlei_url", "quark_url", "baidu_url", "name", "prefix"):
+            if row.get(key) is None:
+                row[key] = ""
     return sorted(rows, key=lambda item: (int(item["prefix"]), item["prefix"]))
 
 

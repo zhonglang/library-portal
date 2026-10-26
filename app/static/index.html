@@ -11,6 +11,10 @@
       <header class="heading">
         <h1>AI漫剧网盘资源库</h1>
         <p>输入剧名即可搜索，点网盘名复制链接。</p>
+        <div class="toolbar">
+          <button type="button" id="refresh" class="tool">刷新</button>
+          <button type="button" id="today" class="tool">今日更新</button>
+        </div>
       </header>
       <p id="error" class="error" hidden></p>
       <label class="search">
@@ -27,6 +31,16 @@
       <p id="count" class="count">正在读取</p>
       <div id="list" class="list"></div>
     </main>
+    <div id="today-modal" class="modal" hidden>
+      <div class="modal-backdrop" data-close="today"></div>
+      <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="today-title">
+        <div class="modal-head">
+          <h2 id="today-title">今日更新</h2>
+          <button type="button" class="modal-close" data-close="today" aria-label="关闭">×</button>
+        </div>
+        <div id="today-list" class="today-list"></div>
+      </div>
+    </div>
     <div id="toast" class="toast" role="status" hidden></div>
     <script src="/static/app.js"></script>
   </body>
