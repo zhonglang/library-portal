@@ -141,13 +141,52 @@ function showToast(message) {
   }, 1800);
 }
 
-async function copyText(text) {
+function copyByCommand(text) {
+  const mark = document.createElement("textarea");
+  mark.value = text;
+  mark.setAttribute("readonly", "");
+  mark.style.position = "fixed";
+  mark.style.top = "0";
+  mark.style.left = "0";
+  mark.style.width = "2em";
+  mark.style.height = "2em";
+  mark.style.padding = "0";
+  mark.style.border = "none";
+  mark.style.outline = "none";
+  mark.style.boxShadow = "none";
+  mark.style.background = "transparent";
+  mark.style.fontSize = "12pt";
+  const selection = document.getSelection();
+  const saved = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+  document.body.appendChild(mark);
+  mark.focus();
+  mark.select();
+  mark.setSelectionRange(0, mark.value.length);
+  let ok = false;
   try {
-    await navigator.clipboard.writeText(text);
-    showToast("已复制");
+    ok = document.execCommand("copy");
   } catch {
-    showToast("复制失败");
+    ok = false;
   }
+  mark.remove();
+  if (saved && selection) {
+    selection.removeAllRanges();
+    selection.addRange(saved);
+  }
+  return ok;
+}
+
+function copyText(text) {
+  const commandOk = copyByCommand(text);
+  const write = window.isSecureContext ? navigator.clipboard?.writeText?.bind(navigator.clipboard) : null;
+  if (!write) {
+    showToast(commandOk ? "已复制" : "复制失败");
+    return;
+  }
+  write(text).then(
+    () => showToast("已复制"),
+    () => showToast(commandOk ? "已复制" : "复制失败"),
+  );
 }
 
 function render() {
