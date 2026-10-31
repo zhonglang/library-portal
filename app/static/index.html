@@ -14,6 +14,7 @@
         <div class="toolbar">
           <button type="button" id="refresh" class="tool">刷新</button>
           <button type="button" id="today" class="tool">今日更新</button>
+          <button type="button" id="copy-today" class="tool">复制更新</button>
         </div>
       </header>
       <p id="error" class="error" hidden></p>
@@ -36,7 +37,10 @@
       <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="today-title">
         <div class="modal-head">
           <h2 id="today-title">今日更新</h2>
-          <button type="button" class="modal-close" data-close="today" aria-label="关闭">×</button>
+          <div class="modal-head-actions">
+            <button type="button" id="copy-today-modal" class="tool">复制更新</button>
+            <button type="button" class="modal-close" data-close="today" aria-label="关闭">×</button>
+          </div>
         </div>
         <div id="today-list" class="today-list"></div>
       </div>

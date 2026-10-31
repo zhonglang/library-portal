@@ -23,6 +23,7 @@ const errorBox = document.querySelector("#error");
 const toast = document.querySelector("#toast");
 const refreshBtn = document.querySelector("#refresh");
 const todayBtn = document.querySelector("#today");
+const copyTodayButtons = document.querySelectorAll("#copy-today, #copy-today-modal");
 const todayModal = document.querySelector("#today-modal");
 const todayList = document.querySelector("#today-list");
 
@@ -86,15 +87,49 @@ function shanghaiDateKey(value) {
   }).format(date);
 }
 
-function isTodayUpdated(item) {
+function isSameShanghaiDay(value, day = new Date()) {
+  if (!value) return false;
+  return shanghaiDateKey(value) === shanghaiDateKey(day);
+}
+
+function isEpisodeUpdated(item) {
   if (item.previous_episode == null || item.latest_episode == null) return false;
   if (item.previous_episode === item.latest_episode) return false;
-  if (!item.updated_at) return false;
-  return shanghaiDateKey(item.updated_at) === shanghaiDateKey(new Date());
+  return isSameShanghaiDay(item.updated_at);
+}
+
+function isTodayCreated(item) {
+  return isSameShanghaiDay(item.created_at);
 }
 
 function episodeLabel(value) {
   return value == null ? "—" : `${value}`;
+}
+
+function todayRows() {
+  return items.filter((item) => isEpisodeUpdated(item) || isTodayCreated(item)).sort((left, right) => {
+    const leftKey = Number.parseInt(left.prefix, 10);
+    const rightKey = Number.parseInt(right.prefix, 10);
+    if (Number.isFinite(leftKey) && Number.isFinite(rightKey) && leftKey !== rightKey) {
+      return leftKey - rightKey;
+    }
+    return String(left.prefix).localeCompare(String(right.prefix), "zh-CN");
+  });
+}
+
+function todayUpdateLine(item) {
+  const name = cleanCopyName(item.name) || "未填写名称";
+  if (isEpisodeUpdated(item)) {
+    return `${item.prefix} ${name}  ${episodeLabel(item.previous_episode)} →  ${episodeLabel(item.latest_episode)}`;
+  }
+  const marks = ["新增"];
+  if (item.finished) marks.push("完结");
+  if (item.latest_episode != null) marks.push(episodeLabel(item.latest_episode));
+  return `${item.prefix} ${name}  ${marks.join("  ")}`;
+}
+
+function todayUpdateText() {
+  return todayRows().map(todayUpdateLine).join("\n");
 }
 
 function showToast(message) {
@@ -189,19 +224,12 @@ function render() {
 }
 
 function renderTodayModal() {
-  const rows = items.filter(isTodayUpdated).sort((left, right) => {
-    const leftKey = Number.parseInt(left.prefix, 10);
-    const rightKey = Number.parseInt(right.prefix, 10);
-    if (Number.isFinite(leftKey) && Number.isFinite(rightKey) && leftKey !== rightKey) {
-      return leftKey - rightKey;
-    }
-    return String(left.prefix).localeCompare(String(right.prefix), "zh-CN");
-  });
+  const rows = todayRows();
   todayList.replaceChildren();
   if (rows.length === 0) {
     const empty = document.createElement("div");
     empty.className = "today-empty";
-    empty.textContent = "今天还没有集数更新。";
+    empty.textContent = "今天还没有更新。";
     todayList.append(empty);
     return;
   }
@@ -222,16 +250,35 @@ function renderTodayModal() {
 
     const change = document.createElement("div");
     change.className = "today-change";
-    const prev = document.createElement("span");
-    prev.className = "today-ep today-ep-old";
-    prev.textContent = episodeLabel(item.previous_episode);
-    const arrow = document.createElement("span");
-    arrow.className = "today-arrow";
-    arrow.textContent = "→";
-    const next = document.createElement("span");
-    next.className = "today-ep today-ep-new";
-    next.textContent = episodeLabel(item.latest_episode);
-    change.append(prev, arrow, next);
+    if (isEpisodeUpdated(item)) {
+      const prev = document.createElement("span");
+      prev.className = "today-ep today-ep-old";
+      prev.textContent = episodeLabel(item.previous_episode);
+      const arrow = document.createElement("span");
+      arrow.className = "today-arrow";
+      arrow.textContent = "→";
+      const next = document.createElement("span");
+      next.className = "today-ep today-ep-new";
+      next.textContent = episodeLabel(item.latest_episode);
+      change.append(prev, arrow, next);
+    } else {
+      const mark = document.createElement("span");
+      mark.className = "today-new";
+      mark.textContent = "新增";
+      change.append(mark);
+      if (item.finished) {
+        const done = document.createElement("span");
+        done.className = "today-new today-new-done";
+        done.textContent = "完结";
+        change.append(done);
+      }
+      if (item.latest_episode != null) {
+        const next = document.createElement("span");
+        next.className = "today-ep today-ep-new";
+        next.textContent = episodeLabel(item.latest_episode);
+        change.append(next);
+      }
+    }
 
     main.append(prefix, title, change);
 
@@ -275,10 +322,22 @@ function closeTodayModal() {
   todayModal.hidden = true;
 }
 
+async function copyTodayUpdates() {
+  const text = todayUpdateText();
+  if (!text) {
+    showToast("今天还没有更新");
+    return;
+  }
+  await copyText(text);
+}
+
 async function loadItems() {
   loading = true;
   refreshBtn.disabled = true;
   refreshBtn.textContent = "正在刷新";
+  copyTodayButtons.forEach((button) => {
+    button.disabled = true;
+  });
   errorBox.hidden = true;
   render();
   try {
@@ -294,6 +353,9 @@ async function loadItems() {
     loading = false;
     refreshBtn.disabled = false;
     refreshBtn.textContent = "刷新";
+    copyTodayButtons.forEach((button) => {
+      button.disabled = false;
+    });
     render();
     if (!todayModal.hidden) renderTodayModal();
   }
@@ -312,6 +374,9 @@ document.querySelectorAll(".filters button").forEach((button) => {
 queryInput.addEventListener("input", render);
 refreshBtn.addEventListener("click", () => void loadItems());
 todayBtn.addEventListener("click", openTodayModal);
+copyTodayButtons.forEach((button) => {
+  button.addEventListener("click", () => void copyTodayUpdates());
+});
 todayModal.querySelectorAll("[data-close='today']").forEach((node) => {
   node.addEventListener("click", closeTodayModal);
 });
